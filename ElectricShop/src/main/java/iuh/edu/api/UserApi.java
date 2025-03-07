@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -65,8 +67,8 @@ public class UserApi {
     SendMailService sendMailService;
 
     @GetMapping
-    public ResponseEntity<List<User>> getAll() {
-        return ResponseEntity.ok(userRepository.findByStatusTrue());
+    public ResponseEntity<Page<User>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(userRepository.findByStatusTrue(pageable));
     }
 
     @GetMapping("{id}")

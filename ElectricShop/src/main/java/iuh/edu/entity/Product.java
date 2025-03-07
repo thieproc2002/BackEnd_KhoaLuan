@@ -40,7 +40,9 @@ public class Product implements Serializable {
     @ManyToOne
     @JoinColumn(name = "categoryId")
     private Category category;
-
+    public boolean isStatus() {
+        return Boolean.TRUE.equals(this.status);
+    }
     @Override
     public String toString() {
         return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + ", price=" + price

@@ -2,7 +2,9 @@
 package iuh.edu.api;
 
 import java.util.List;
+import java.util.Optional;
 
+import iuh.edu.entity.Cart;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -54,30 +56,30 @@ public class CartDetailApi {
 
     @PostMapping()
     public ResponseEntity<CartDetail> post(@RequestBody CartDetail detail) {
-        if (!cartRepository.existsById(detail.getCart().getCartId())) {
+        Optional<Cart> cartOpt = cartRepository.findById(detail.getCart().getCartId());
+        if (!cartOpt.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        boolean check = false;
-        List<Product> listP = productRepository.findByStatusTrue();
-        Product product = productRepository.findByProductIdAndStatusTrue(detail.getProduct().getProductId());
-        for (Product p : listP) {
-            if (p.getProductId() == product.getProductId()) {
-                check = true;
-            }
-        }
-        ;
-        if (!check) {
+        Optional<Product> productOpt = productRepository.findById(detail.getProduct().getProductId());
+        if (!productOpt.isPresent() || !productOpt.get().isStatus()) {
             return ResponseEntity.notFound().build();
         }
-        List<CartDetail> listD = cartDetailRepository
-                .findByCart(cartRepository.findById(detail.getCart().getCartId()).get());
+
+        Cart cart = cartOpt.get();
+        Product product = productOpt.get();
+
+        // Kiểm tra sản phẩm đã có trong giỏ hàng chưa
+        List<CartDetail> listD = cartDetailRepository.findByCart(cart);
         for (CartDetail item : listD) {
-            if (item.getProduct().getProductId() == detail.getProduct().getProductId()) {
+            if (item.getProduct().getProductId().equals(product.getProductId())) {
                 item.setQuantity(item.getQuantity() + 1);
                 item.setPrice(item.getPrice() + detail.getPrice());
                 return ResponseEntity.ok(cartDetailRepository.save(item));
             }
         }
+        // Nếu sản phẩm chưa có trong giỏ, thêm mới vào giỏ hàng
+        detail.setCart(cart);
+        detail.setProduct(product);
         return ResponseEntity.ok(cartDetailRepository.save(detail));
     }
 

@@ -4,6 +4,8 @@ package iuh.edu.api;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,8 +34,8 @@ public class ProductApi {
     CategoryRepository cRepo;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAll() {
-        return ResponseEntity.ok(repo.findByStatusTrue());
+    public ResponseEntity<Page<Product>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(repo.findByStatusTrue(pageable));
     }
 
     @GetMapping("bestseller")

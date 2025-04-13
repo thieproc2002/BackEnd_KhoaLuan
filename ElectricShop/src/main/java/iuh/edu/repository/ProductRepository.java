@@ -16,10 +16,11 @@ import iuh.edu.entity.Product;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByStatusTrue(Pageable pageable);
-
+    List<Product> findAll();
     List<Product> findByStatusTrueOrderBySoldDesc();
 
     List<Product> findTop10ByOrderBySoldDesc();
+    List<Product> findByNameContainingIgnoreCase(String keyword);
 
     List<Product> findByStatusTrueOrderByQuantityDesc();
 

@@ -15,7 +15,7 @@ import iuh.edu.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Page<User> findByStatusTrue(Pageable pageable);
-
+List<User> findByStatusTrue();
     Boolean existsByEmail(String email);
 
     Optional<User> findByEmail(String username);

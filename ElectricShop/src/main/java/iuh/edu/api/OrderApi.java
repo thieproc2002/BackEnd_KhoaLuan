@@ -59,7 +59,10 @@ public class OrderApi {
     public ResponseEntity<Page<Order>> findAll(Pageable pageable) {
         return ResponseEntity.ok(orderRepository.findAllByOrderByOrdersIdDesc(pageable));
     }
-
+    @GetMapping("/nopage")
+    public ResponseEntity<List<Order>> findAll() {
+        return ResponseEntity.ok(orderRepository.findAllByOrderByOrdersIdDesc());
+    }
     @GetMapping("{id}")
     public ResponseEntity<Order> getById(@PathVariable("id") Long id) {
         if (!orderRepository.existsById(id)) {

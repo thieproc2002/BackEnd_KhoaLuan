@@ -1,21 +1,17 @@
 
 package iuh.edu.api;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import iuh.edu.entity.SearchHistory;
+import iuh.edu.repository.SearchHistoryRepository;
+import iuh.edu.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import iuh.edu.entity.Category;
 import iuh.edu.entity.Product;
@@ -29,15 +25,20 @@ public class ProductApi {
 
     @Autowired
     ProductRepository repo;
-
+    @Autowired
+    SearchHistoryRepository searchRepo;
     @Autowired
     CategoryRepository cRepo;
-
+    @Autowired
+    UserRepository uRepo;
     @GetMapping
     public ResponseEntity<Page<Product>> getAll(Pageable pageable) {
         return ResponseEntity.ok(repo.findByStatusTrue(pageable));
     }
-
+    @GetMapping("/nopage")
+    public ResponseEntity<List<Product>> getAllNopage() {
+        return ResponseEntity.ok(repo.findAll());
+    }
     @GetMapping("bestseller")
     public ResponseEntity<List<Product>> getBestSeller() {
         return ResponseEntity.ok(repo.findByStatusTrueOrderBySoldDesc());
@@ -100,8 +101,8 @@ public class ProductApi {
         return ResponseEntity.ok(repo.save(product));
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
+    @DeleteMapping("{product_id}")
+    public ResponseEntity<Void> delete(@PathVariable("product_id") Long id) {
         if (!repo.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
@@ -110,5 +111,20 @@ public class ProductApi {
         repo.save(p);
         return ResponseEntity.ok().build();
     }
+    @PostMapping("/search/{userId}")
+    public ResponseEntity<List<Product>> searchProducts(@PathVariable("userId") Long userId, @RequestBody String keyword) {
 
+        List<Product> result = repo.findByNameContainingIgnoreCase(keyword);
+
+        // Lưu lịch sử tìm kiếm
+        uRepo.findById(userId).ifPresent(user -> {
+            SearchHistory history = new SearchHistory();
+            history.setKeyword(keyword);
+            history.setUser(user);
+            history.setSearchedAt(LocalDateTime.now());
+            searchRepo.save(history);
+        });
+
+        return ResponseEntity.ok(result);
+    }
 }

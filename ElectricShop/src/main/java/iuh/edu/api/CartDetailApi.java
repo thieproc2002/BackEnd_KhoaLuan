@@ -38,12 +38,14 @@ public class CartDetailApi {
     @Autowired
     ProductRepository productRepository;
 
-    @GetMapping("cart/{id}")
-    public ResponseEntity<List<CartDetail>> getByCartId(@PathVariable("id") Long id) {
-        if (!cartRepository.existsById(id)) {
+    @GetMapping("cart/{userid}")
+    public ResponseEntity<List<CartDetail>> getByCartId(@PathVariable("userid") Long userid) {
+        Cart cart = cartRepository.findByUser_UserId(userid);
+        if (cart == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(cartDetailRepository.findByCart(cartRepository.findById(id).get()));
+        List<CartDetail> cartDetails = cartDetailRepository.findByCart(cart);
+        return ResponseEntity.ok(cartDetails);
     }
 
     @RequestMapping(value = "{id}", method = RequestMethod.GET)

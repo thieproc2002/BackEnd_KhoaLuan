@@ -70,6 +70,10 @@ public class UserApi {
     public ResponseEntity<Page<User>> getAll(Pageable pageable) {
         return ResponseEntity.ok(userRepository.findByStatusTrue(pageable));
     }
+    @GetMapping("nopage")
+    public ResponseEntity<List<User>> getAll() {
+        return ResponseEntity.ok(userRepository.findByStatusTrue());
+    }
 
     @GetMapping("{id}")
     public ResponseEntity<User> getOne(@PathVariable("id") Long id) {

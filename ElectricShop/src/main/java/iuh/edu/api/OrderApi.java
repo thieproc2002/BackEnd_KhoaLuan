@@ -3,7 +3,9 @@ package iuh.edu.api;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
+import iuh.edu.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,11 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import iuh.edu.entity.Cart;
-import iuh.edu.entity.CartDetail;
-import iuh.edu.entity.Order;
-import iuh.edu.entity.OrderDetail;
-import iuh.edu.entity.Product;
 import iuh.edu.repository.CartDetailRepository;
 import iuh.edu.repository.CartRepository;
 import iuh.edu.repository.OrderDetailRepository;
@@ -88,12 +85,14 @@ public class OrderApi {
         if (!cartRepository.existsById(cart.getCartId())) {
             return ResponseEntity.notFound().build();
         }
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        User user = optionalUser.get();
         List<CartDetail> items = cartDetailRepository.findByCart(cart);
         Double amount = 0.0;
         for (CartDetail i : items) {
             amount += i.getPrice();
         }
-        Order order = orderRepository.save(new Order(0L, new Date(), amount, cart.getAddress(), cart.getPhone(), 0,
+        Order order = orderRepository.save(new Order(0L, new Date(), amount, user.getAddress(), user.getPhone(), 0,
                 userRepository.findByEmail(email).get()));
         for (CartDetail i : items) {
             OrderDetail orderDetail = new OrderDetail(0L, i.getQuantity(), i.getPrice(), i.getProduct(), order);

@@ -22,7 +22,7 @@ public class ProductService {
         pRepository.saveAll(danhSach);
     }
 
-    private String removeVietnameseAccent(String input) {
+    public String removeVietnameseAccent(String input) {
         String[] a = { "à", "á", "ạ", "ả", "ã", "â", "ầ", "ấ", "ậ", "ẩ", "ẫ", "ă", "ắ", "ằ", "ắ", "ặ", "ẳ", "ẵ", "a" };
         String[] d = { "đ", "d" };
         String[] e = { "è", "é", "ẹ", "ẻ", "ẽ", "ê", "ề", "ế", "ệ", "ể", "ễ", "e" };

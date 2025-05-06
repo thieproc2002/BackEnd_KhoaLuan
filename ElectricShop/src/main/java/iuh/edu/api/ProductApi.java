@@ -1,13 +1,16 @@
 
 package iuh.edu.api;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import iuh.edu.dto.ProductDTO;
 import iuh.edu.entity.SearchHistory;
 import iuh.edu.repository.SearchHistoryRepository;
 import iuh.edu.repository.UserRepository;
+import iuh.edu.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +35,8 @@ public class ProductApi {
     CategoryRepository cRepo;
     @Autowired
     UserRepository uRepo;
+    @Autowired
+    ProductService productService;
     @GetMapping
     public ResponseEntity<Page<Product>> getAll(Pageable pageable) {
         return ResponseEntity.ok(repo.findByStatusTrue(pageable));
@@ -84,21 +89,48 @@ public class ProductApi {
     }
 
     @PostMapping
-    public ResponseEntity<Product> post(@RequestBody Product product) {
-        if (repo.existsById(product.getProductId())) {
+    public ResponseEntity<Product> post(@RequestBody ProductDTO dto) {
+        if(repo.existsById(dto.getProductId())){
             return ResponseEntity.badRequest().build();
         }
+        Product product = new Product();
+        product.setProductId(dto.getProductId());
+        product.setName(dto.getName());
+        product.setNormalizedName(productService.removeVietnameseAccent(dto.getName()));
+        product.setQuantity(dto.getQuantity());
+        product.setPrice(dto.getPrice());
+        product.setDiscount(dto.getDiscount());
+        product.setImage(dto.getImage());
+        product.setDescription(dto.getDescription());
+        product.setEnteredDate(dto.getEnteredDate() != null ? dto.getEnteredDate() : LocalDate.now());
+        product.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
+        product.setSold(dto.getSold());
+
         return ResponseEntity.ok(repo.save(product));
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Product> put(@PathVariable("id") Long id, @RequestBody Product product) {
-        if (!id.equals(product.getProductId())) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<Product> put(@PathVariable("id") Long id, @RequestBody ProductDTO dto) {
         if (!repo.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+        if (!id.equals(dto.getProductId())){
+            return ResponseEntity.badRequest().build();
+        }
+        Optional<Product> optionalProduct = repo.findById(id);
+        Product product = optionalProduct.get();
+        product.setProductId(dto.getProductId());
+        product.setName(dto.getName());
+        product.setNormalizedName(productService.removeVietnameseAccent(dto.getName()));
+        product.setQuantity(dto.getQuantity());
+        product.setPrice(dto.getPrice());
+        product.setDiscount(dto.getDiscount());
+        product.setImage(dto.getImage());
+        product.setDescription(dto.getDescription());
+        product.setEnteredDate(dto.getEnteredDate() != null ? dto.getEnteredDate() : product.getEnteredDate());
+        product.setStatus(dto.getStatus() != null ? dto.getStatus() : product.getStatus());
+        product.setSold(dto.getSold());
+
         return ResponseEntity.ok(repo.save(product));
     }
 

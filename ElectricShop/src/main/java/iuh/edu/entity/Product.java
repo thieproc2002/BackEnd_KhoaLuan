@@ -28,6 +28,7 @@ public class Product implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
     private String name;
+    private String normalizedName;
     private int quantity;
     private Double price;
     private int discount;
@@ -45,7 +46,7 @@ public class Product implements Serializable {
     }
     @Override
     public String toString() {
-        return "Product [productId=" + productId + ", name=" + name + ", quantity=" + quantity + ", price=" + price
+        return "Product [productId=" + productId + ", name=" + name + ", normalizedname=" + normalizedName + ", quantity=" + quantity + ", price=" + price
                 + ", discount=" + discount + ", image=" + image + ", description=" + description + ", enteredDate="
                 + enteredDate + ", status=" + status + ", sold=" + sold + ", category=" + category + "]";
     }

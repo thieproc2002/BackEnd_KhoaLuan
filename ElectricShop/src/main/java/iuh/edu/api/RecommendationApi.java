@@ -43,6 +43,12 @@ public class RecommendationApi {
 
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/nopage/{userId}")
+    public ResponseEntity<List<Product>> getRecommendedProductsNoPage(@PathVariable Long userId) {
+        List<Product> allRecommended = recommendationService.recommendProducts(userId);
+
+        return ResponseEntity.ok(allRecommended);
+    }
 
     @Data
     @AllArgsConstructor

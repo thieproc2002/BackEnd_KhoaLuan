@@ -3,6 +3,7 @@ package iuh.edu.api;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import iuh.edu.entity.SearchHistory;
 import iuh.edu.repository.SearchHistoryRepository;
@@ -112,19 +113,39 @@ public class ProductApi {
         return ResponseEntity.ok().build();
     }
     @PostMapping("/search/{userId}")
-    public ResponseEntity<List<Product>> searchProducts(@PathVariable("userId") Long userId, @RequestBody String keyword) {
+    public ResponseEntity<List<Product>> searchProducts(@PathVariable("userId") Long userId,
+                                                        @RequestBody String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
 
-        List<Product> result = repo.findByNameContainingIgnoreCase(keyword);
+        String processedKeyword = keyword.trim().toLowerCase();
 
-        // Lưu lịch sử tìm kiếm
+        // Tìm kiếm dựa trên cả name và normalizedName
+        List<Product> result = repo.findByNameContainingIgnoreCaseOrNormalizedNameContainingIgnoreCase(processedKeyword, processedKeyword);
+
+        // Nếu không có kết quả, không lưu lịch sử
+        if (result.isEmpty()) {
+            return ResponseEntity.ok(result);
+        }
+
+        // Lưu hoặc cập nhật lịch sử tìm kiếm
         uRepo.findById(userId).ifPresent(user -> {
-            SearchHistory history = new SearchHistory();
-            history.setKeyword(keyword);
-            history.setUser(user);
-            history.setSearchedAt(LocalDateTime.now());
-            searchRepo.save(history);
+            Optional<SearchHistory> existing = searchRepo.findByUser_UserIdAndKeywordIgnoreCase(userId, processedKeyword);
+            if (existing.isPresent()) {
+                SearchHistory history = existing.get();
+                history.setSearchedAt(LocalDateTime.now());
+                searchRepo.save(history);
+            } else {
+                SearchHistory history = new SearchHistory();
+                history.setUser(user);
+                history.setKeyword(processedKeyword);
+                history.setSearchedAt(LocalDateTime.now());
+                searchRepo.save(history);
+            }
         });
 
         return ResponseEntity.ok(result);
     }
+
 }

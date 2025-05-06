@@ -105,6 +105,16 @@ public class ProductApi {
         product.setEnteredDate(dto.getEnteredDate() != null ? dto.getEnteredDate() : LocalDate.now());
         product.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
         product.setSold(dto.getSold());
+        if (dto.getCategory() == null || dto.getCategory().getCategoryId() == null) {
+            return ResponseEntity.badRequest().body(null); // thiếu category
+        }
+
+        Optional<Category> category = cRepo.findById(dto.getCategory().getCategoryId());
+        if (!category.isPresent()) {
+            return ResponseEntity.badRequest().body(null); // category không tồn tại
+        }
+
+        product.setCategory(category.get());
 
         return ResponseEntity.ok(repo.save(product));
     }
@@ -130,7 +140,16 @@ public class ProductApi {
         product.setEnteredDate(dto.getEnteredDate() != null ? dto.getEnteredDate() : product.getEnteredDate());
         product.setStatus(dto.getStatus() != null ? dto.getStatus() : product.getStatus());
         product.setSold(dto.getSold());
+        if (dto.getCategory() == null || dto.getCategory().getCategoryId() == null) {
+            return ResponseEntity.badRequest().body(null); // thiếu category
+        }
 
+        Optional<Category> category = cRepo.findById(dto.getCategory().getCategoryId());
+        if (!category.isPresent()) {
+            return ResponseEntity.badRequest().body(null); // category không tồn tại
+        }
+
+        product.setCategory(category.get());
         return ResponseEntity.ok(repo.save(product));
     }
 

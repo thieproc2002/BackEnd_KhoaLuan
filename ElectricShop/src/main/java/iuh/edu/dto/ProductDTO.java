@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Data
 public class ProductDTO {
-    private Long productId;
+//    private Long productId;
     private String name;
     private int quantity;
     private Double price;

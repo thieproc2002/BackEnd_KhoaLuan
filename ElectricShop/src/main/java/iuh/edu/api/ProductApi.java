@@ -90,11 +90,11 @@ public class ProductApi {
 
     @PostMapping
     public ResponseEntity<Product> post(@RequestBody ProductDTO dto) {
-        if(repo.existsById(dto.getProductId())){
-            return ResponseEntity.badRequest().build();
-        }
+//        if(repo.existsById(dto.getProductId())){
+//            return ResponseEntity.badRequest().build();
+//        }
         Product product = new Product();
-        product.setProductId(dto.getProductId());
+//        product.setProductId(dto.getProductId());
         product.setName(dto.getName());
         product.setNormalizedName(productService.removeVietnameseAccent(dto.getName()));
         product.setQuantity(dto.getQuantity());
@@ -124,12 +124,12 @@ public class ProductApi {
         if (!repo.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        if (!id.equals(dto.getProductId())){
-            return ResponseEntity.badRequest().build();
-        }
+//        if (!id.equals(dto.getProductId())){
+//            return ResponseEntity.badRequest().build();
+//        }
         Optional<Product> optionalProduct = repo.findById(id);
         Product product = optionalProduct.get();
-        product.setProductId(dto.getProductId());
+//        product.setProductId(dto.getProductId());
         product.setName(dto.getName());
         product.setNormalizedName(productService.removeVietnameseAccent(dto.getName()));
         product.setQuantity(dto.getQuantity());
@@ -150,6 +150,7 @@ public class ProductApi {
         }
 
         product.setCategory(category.get());
+
         return ResponseEntity.ok(repo.save(product));
     }
 

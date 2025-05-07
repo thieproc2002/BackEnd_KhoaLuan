@@ -77,6 +77,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/v3/api-docs/**", // API docs của Swagger
                         "/swagger-ui/**",   // Swagger UI
                         "/swagger-ui.html",
+                        "api/recommendations/nopage/**",
                         "api/notification/**")
                 .permitAll();
 

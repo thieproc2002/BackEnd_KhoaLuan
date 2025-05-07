@@ -90,7 +90,8 @@ public class OrderApi {
         List<CartDetail> items = cartDetailRepository.findByCart(cart);
         Double amount = 0.0;
         for (CartDetail i : items) {
-            amount += i.getPrice();
+            Double amounti= i.getPrice()*i.getQuantity();
+            amount += amounti;
         }
         Order order = orderRepository.save(new Order(0L, new Date(), amount, user.getAddress(), user.getPhone(), 0,
                 userRepository.findByEmail(email).get()));

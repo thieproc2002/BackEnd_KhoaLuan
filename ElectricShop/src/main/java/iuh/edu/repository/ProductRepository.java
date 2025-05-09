@@ -16,6 +16,7 @@ import iuh.edu.entity.Product;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByStatusTrue(Pageable pageable);
+    List<Product> findByStatusTrue();
     List<Product> findAll();
     List<Product> findByStatusTrueOrderBySoldDesc();
     List<Product> findByNameContainingIgnoreCaseOrNormalizedNameContainingIgnoreCase(String name, String normalizedName);

@@ -41,6 +41,10 @@ public class ProductApi {
     public ResponseEntity<Page<Product>> getAll(Pageable pageable) {
         return ResponseEntity.ok(repo.findByStatusTrue(pageable));
     }
+    @GetMapping("/status")
+    public ResponseEntity<List<Product>> getProductByStatus() {
+        return ResponseEntity.ok(repo.findByStatusTrue());
+    }
     @GetMapping("/nopage")
     public ResponseEntity<List<Product>> getAllNopage() {
         return ResponseEntity.ok(repo.findAll());
@@ -178,6 +182,10 @@ public class ProductApi {
 
         // Nếu không có kết quả, không lưu lịch sử
         if (result.isEmpty()) {
+            return ResponseEntity.ok(result);
+        }
+        // Người dùng chưa đăng nhập trên fe sẽ mặc định gọi api với userid 0
+        if (userId == 0) {
             return ResponseEntity.ok(result);
         }
 

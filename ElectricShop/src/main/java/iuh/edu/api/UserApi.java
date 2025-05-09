@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import iuh.edu.entity.VerifyPasswordRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -232,5 +233,29 @@ public class UserApi {
                 + "    <a href=\"http://localhost:8080/forgot-password/" + token + "\">Đổi mật khẩu</a>";
         sendMailService.queue(email, title, body);
     }
+    @PostMapping("/verify-password")
+    public ResponseEntity<Boolean> verifyPassword(@RequestBody VerifyPasswordRequest request) {
+        // Kiểm tra xem request.getUserId() và request.getOldPassword() có giá trị không null
+        if (request.getUserId() == null || request.getOldPassword() == null) {
+            return ResponseEntity.badRequest().body(false);
+        }
 
+        User user = userRepository.findById(request.getUserId()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Kiểm tra xem mật khẩu nguyên thủy (rawPassword) có giá trị không null trước khi so sánh
+        String rawPassword = request.getOldPassword();
+        if (rawPassword == null) {
+            return ResponseEntity.badRequest().body(false);
+        }
+
+        // Thực hiện so sánh mật khẩu đã mã hóa với mật khẩu nguyên thủy
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            return ResponseEntity.ok(false);
+        }
+
+        return ResponseEntity.ok(true);
+    }
 }

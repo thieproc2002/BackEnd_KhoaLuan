@@ -103,7 +103,38 @@ public class OrderApi {
         for (CartDetail i : items) {
             cartDetailRepository.delete(i);
         }
+        updateProduct(order);
         senMail.sendMailOrder(order);
+        return ResponseEntity.ok(order);
+    }
+    @PostMapping("/paypal/{email}")
+    public ResponseEntity<Order> checkoutPaypal(@PathVariable("email") String email, @RequestBody Cart cart) {
+        if (!userRepository.existsByEmail(email)) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!cartRepository.existsById(cart.getCartId())) {
+            return ResponseEntity.notFound().build();
+        }
+        List<CartDetail> items = cartDetailRepository.findByCart(cart);
+        Double amount = 0.0;
+        for (CartDetail item : items) {
+            if (item.getProduct().getQuantity() == 0) {
+                return ResponseEntity.notFound().build();
+            }
+            amount += item.getPrice();
+        }
+        Order order = orderRepository.save(new Order(0L, new Date(), amount, cart.getAddress(), cart.getPhone(),4,
+                userRepository.findByEmail(email).get()));
+        for (CartDetail i : items) {
+            OrderDetail orderDetail = new OrderDetail(0L, i.getQuantity(), i.getPrice(), i.getProduct(), order);
+            orderDetailRepository.save(orderDetail);
+        }
+//		cartDetailRepository.deleteByCart(cart);
+        for (CartDetail i : items) {
+            cartDetailRepository.delete(i);
+        }
+        senMail.sendMailOrderPay(order);
+        updateProduct(order);
         return ResponseEntity.ok(order);
     }
 
@@ -115,6 +146,7 @@ public class OrderApi {
         Order order = orderRepository.findById(id).get();
         order.setStatus(3);
         orderRepository.save(order);
+        restoreProductQuantity(order);
         senMail.sendMailOrderCancel(order);
         return ResponseEntity.ok().build();
     }
@@ -140,7 +172,7 @@ public class OrderApi {
         order.setStatus(2);
         orderRepository.save(order);
         senMail.sendMailOrderSuccess(order);
-        updateProduct(order);
+//        updateProduct(order);
         return ResponseEntity.ok().build();
     }
 
@@ -151,6 +183,17 @@ public class OrderApi {
             if (product != null) {
                 product.setQuantity(product.getQuantity() - orderDetail.getQuantity());
                 product.setSold(product.getSold() + orderDetail.getQuantity());
+                productRepository.save(product);
+            }
+        }
+    }
+    public void restoreProductQuantity(Order order) {
+        List<OrderDetail> listOrderDetail = orderDetailRepository.findByOrder(order);
+        for (OrderDetail orderDetail : listOrderDetail) {
+            Product product = productRepository.findById(orderDetail.getProduct().getProductId()).get();
+            if (product != null) {
+                product.setQuantity(product.getQuantity() + orderDetail.getQuantity());
+                product.setSold(product.getSold() - orderDetail.getQuantity());
                 productRepository.save(product);
             }
         }

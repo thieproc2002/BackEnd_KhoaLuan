@@ -90,10 +90,14 @@ public class OrderApi {
         List<CartDetail> items = cartDetailRepository.findByCart(cart);
         Double amount = 0.0;
         for (CartDetail i : items) {
+            Product product = productRepository.findById(i.getProduct().getProductId()).orElse(null);
+            if (product == null || product.getQuantity() < i.getQuantity()) {
+                return ResponseEntity.notFound().build();
+            }
             Double amounti= i.getPrice()*i.getQuantity();
             amount += amounti;
         }
-        Order order = orderRepository.save(new Order(0L, new Date(), amount, user.getAddress(), user.getPhone(), 0,
+        Order order = orderRepository.save(new Order(0L, new Date(), amount, cart.getAddress(), user.getPhone(), 0,
                 userRepository.findByEmail(email).get()));
         for (CartDetail i : items) {
             OrderDetail orderDetail = new OrderDetail(0L, i.getQuantity(), i.getPrice(), i.getProduct(), order);
@@ -118,9 +122,14 @@ public class OrderApi {
         List<CartDetail> items = cartDetailRepository.findByCart(cart);
         Double amount = 0.0;
         for (CartDetail item : items) {
+            Product product = productRepository.findById(item.getProduct().getProductId()).orElse(null);
+            if (product == null || product.getQuantity() < item.getQuantity()) {
+                return ResponseEntity.notFound().build();
+            }
             if (item.getProduct().getQuantity() == 0) {
                 return ResponseEntity.notFound().build();
             }
+            Double amounti= item.getPrice()*item.getQuantity();
             amount += item.getPrice();
         }
         Order order = orderRepository.save(new Order(0L, new Date(), amount, cart.getAddress(), cart.getPhone(),4,
@@ -133,7 +142,7 @@ public class OrderApi {
         for (CartDetail i : items) {
             cartDetailRepository.delete(i);
         }
-        senMail.sendMailOrderPay(order);
+        senMail.sendMailOrder(order);
         updateProduct(order);
         return ResponseEntity.ok(order);
     }
@@ -160,6 +169,17 @@ public class OrderApi {
         order.setStatus(1);
         orderRepository.save(order);
         senMail.sendMailOrderDeliver(order);
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("paid/{orderId}")
+    public ResponseEntity<Void> paid(@PathVariable("orderId") Long id) {
+        if (!orderRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        Order order = orderRepository.findById(id).get();
+        order.setStatus(4);
+        orderRepository.save(order);
+        senMail.sendMailOrderPay(order);
         return ResponseEntity.ok().build();
     }
 

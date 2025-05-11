@@ -4,13 +4,10 @@ package iuh.edu.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import iuh.edu.service.StatisticalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import iuh.edu.dto.CategoryBestSeller;
 import iuh.edu.dto.Statistical;
@@ -33,6 +30,8 @@ public class StatisticalApi {
 
     @Autowired
     ProductRepository productRepository;
+    @Autowired
+    private StatisticalService statisticalService;
 
     @GetMapping("{year}")
     public ResponseEntity<List<Statistical>> getStatisticalYear(@PathVariable("year") int year) {
@@ -64,10 +63,10 @@ public class StatisticalApi {
         return ResponseEntity.ok(statisticalRepository.getYears());
     }
 
-    @GetMapping("/revenue/year/{year}")
-    public ResponseEntity<Double> getRevenueByYear(@PathVariable("year") int year) {
-        return ResponseEntity.ok(statisticalRepository.getRevenueByYear(year));
-    }
+//    @GetMapping("/revenue/year/{year}")
+//    public ResponseEntity<Double> getRevenueByYear(@PathVariable("year") int year) {
+//        return ResponseEntity.ok(statisticalRepository.getRevenueByYear(year));
+//    }
 
     @GetMapping("/get-all-order-success")
     public ResponseEntity<List<Order>> getAllOrderSuccess() {
@@ -90,5 +89,8 @@ public class StatisticalApi {
     public ResponseEntity<List<Product>> getInventory() {
         return ResponseEntity.ok(productRepository.findByStatusTrueOrderByQuantityDesc());
     }
-
+    @GetMapping("/revenue/year/{year}")
+    public List<Statistical> getMonthlyRevenue(@PathVariable("year") int year) {
+        return statisticalService.getMonthlyRevenueByYear(year);
+    }
 }

@@ -178,7 +178,7 @@ public class ProductApi {
         String processedKeyword = keyword.trim().toLowerCase();
 
         // Tìm kiếm dựa trên cả name và normalizedName
-        List<Product> result = repo.findByNameContainingIgnoreCaseOrNormalizedNameContainingIgnoreCase(processedKeyword, processedKeyword);
+        List<Product> result = repo.findByStatusTrueAndNameContainingIgnoreCaseOrStatusTrueAndNormalizedNameContainingIgnoreCase(processedKeyword, processedKeyword);
 
         // Nếu không có kết quả, không lưu lịch sử
         if (result.isEmpty()) {

@@ -24,7 +24,7 @@ public class RecommendationService {
         // Tìm sản phẩm liên quan đến từ khóa
         Set<Product> recommended = new HashSet<>();
         for (SearchHistory h : history) {
-            List<Product> matches = productRepo.findByNameContainingIgnoreCaseOrNormalizedNameContainingIgnoreCase(h.getKeyword(),h.getKeyword());
+            List<Product> matches = productRepo.findByStatusTrueAndNameContainingIgnoreCaseOrStatusTrueAndNormalizedNameContainingIgnoreCase(h.getKeyword(),h.getKeyword());
             recommended.addAll(matches);
         }
 

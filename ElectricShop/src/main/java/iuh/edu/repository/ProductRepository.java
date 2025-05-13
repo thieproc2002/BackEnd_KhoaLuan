@@ -19,7 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByStatusTrue();
     List<Product> findAll();
     List<Product> findByStatusTrueOrderBySoldDesc();
-    List<Product> findByNameContainingIgnoreCaseOrNormalizedNameContainingIgnoreCase(String name, String normalizedName);
+    List<Product> findByStatusTrueAndNameContainingIgnoreCaseOrStatusTrueAndNormalizedNameContainingIgnoreCase(String name, String normalizedName);
 
     List<Product> findTop10ByOrderBySoldDesc();
     List<Product> findByNameContainingIgnoreCase(String keyword);

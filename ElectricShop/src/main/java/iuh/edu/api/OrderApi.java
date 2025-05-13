@@ -130,7 +130,7 @@ public class OrderApi {
                 return ResponseEntity.notFound().build();
             }
             Double amounti= item.getPrice()*item.getQuantity();
-            amount += item.getPrice();
+            amount += amounti;
         }
         Order order = orderRepository.save(new Order(0L, new Date(), amount, cart.getAddress(), cart.getPhone(),4,
                 userRepository.findByEmail(email).get()));
@@ -142,7 +142,7 @@ public class OrderApi {
         for (CartDetail i : items) {
             cartDetailRepository.delete(i);
         }
-        senMail.sendMailOrder(order);
+        senMail.sendMailOrderPay(order);
         updateProduct(order);
         return ResponseEntity.ok(order);
     }

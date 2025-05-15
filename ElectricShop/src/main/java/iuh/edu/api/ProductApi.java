@@ -14,6 +14,7 @@ import iuh.edu.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -159,14 +160,19 @@ public class ProductApi {
     }
 
     @DeleteMapping("{product_id}")
-    public ResponseEntity<Void> delete(@PathVariable("product_id") Long id) {
-        if (!repo.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        Product p = repo.findById(id).get();
-        p.setStatus(false);
-        repo.save(p);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> delete(@PathVariable("product_id") Long id) {
+        return repo.findById(id).map(product -> {
+            try {
+                // Cố gắng xóa sản phẩm
+                repo.delete(product);
+                return ResponseEntity.ok("Sản phẩm đã được xóa thành công.");
+            } catch (Exception e) {
+                // Nếu không thể xóa, đặt trạng thái ẩn
+                product.setStatus(false);
+                repo.save(product);
+                return ResponseEntity.ok("Sản phẩm đã được ẩn do đã có đơn hàng liên quan.");
+            }
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm với ID: " + id));
     }
     @PostMapping("/search/{userId}")
     public ResponseEntity<List<Product>> searchProducts(@PathVariable("userId") Long userId,

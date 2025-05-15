@@ -73,9 +73,26 @@ public class UserApi {
     }
     @GetMapping("nopage")
     public ResponseEntity<List<User>> getAll() {
-        return ResponseEntity.ok(userRepository.findByStatusTrue());
+        return ResponseEntity.ok(userRepository.findAll());
     }
+    @DeleteMapping("/cancel/{id}")
+    public ResponseEntity<Void> cancel(@PathVariable("id") Long id) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
 
+        User u = userRepository.findById(id).orElse(null);
+        if (u == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Set status to false immediately
+        u.setStatus(true);
+        userRepository.save(u);
+
+
+        return ResponseEntity.ok().build();
+    }
     @GetMapping("{id}")
     public ResponseEntity<User> getOne(@PathVariable("id") Long id) {
         if (!userRepository.existsById(id)) {
@@ -172,6 +189,9 @@ public class UserApi {
         String jwt = jwtUtils.generateJwtToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getStatus()) {
+            return ResponseEntity.badRequest().body("Tài khoản của bạn đã bị vô hiệu. Liên hệ admin để được hỗ trợ.");
+        }
         List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
@@ -181,7 +201,18 @@ public class UserApi {
                 roles));
 
     }
+    @GetMapping("/{id}/status")
+    public ResponseEntity<Boolean> getUserStatus(@PathVariable("id") Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
 
+        // Assuming status is a boolean field in your User entity
+        boolean status = user.getStatus();
+
+        return ResponseEntity.ok(status);
+    }
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Validated @RequestBody SignupRequest signupRequest) {
 
